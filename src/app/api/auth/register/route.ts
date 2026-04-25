@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 
-const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email, password, name } = body;
 
-    // Validate input
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email and password are required" },
@@ -29,7 +27,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // hash the password for security
+    // Hash the password for security
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({

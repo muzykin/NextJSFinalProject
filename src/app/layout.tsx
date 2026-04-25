@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <div className="min-h-screen bg-slate-50">
           {/* Header/Navigation */}
           <header className="bg-white border-b sticky top-0 z-50">

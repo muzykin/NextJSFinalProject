@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 
-const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
@@ -40,17 +39,13 @@ export async function POST(request: Request) {
     }
 
     // Get the private key from environment variables
-    const privateKey = process.env.JWT_PRIVATE_KEY;
-
-    if (!privateKey) {
-      throw new Error("JWT_PRIVATE_KEY is not defined in .env");
-    }
+    const secretKey = process.env.JWT_SECRET || "fallback-secret-key";
 
     // Create the JWT token using RS256 algorithm
     const token = jwt.sign(
       { userId: user.id, email: user.email }, 
-      privateKey,                             
-      { algorithm: "RS256", expiresIn: "24h" } 
+      secretKey,                             
+      { expiresIn: "24h" } 
     );
 
     // Set the token in an HTTP-only cookie for security
