@@ -65,7 +65,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" placeholder="your password" required minLength={6} />
+              <Input id="password" name="password" type="password" placeholder="Your password" required minLength={6} />
             </div>
             
             {error && <p className="text-sm text-red-500 font-medium">{error}</p>}

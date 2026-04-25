@@ -62,7 +62,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
               </div>
-              <Input id="password" name="password" type="password" placeholder="your password" required />
+              <Input id="password" name="password" type="password" placeholder="Your password" required />
             </div>
             
             {/* Display error message if login fails */}
