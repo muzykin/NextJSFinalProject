@@ -58,8 +58,15 @@ export default async function RecipePage({ params }: RecipePageProps) {
             </Button>
           </Link>
           
-          {/* Conditionally render the delete button ONLY if user is the author */}
-          {isAuthor && <DeleteRecipeButton recipeId={recipe.id} />}
+          {/* Conditionally render Edit and Delete buttons ONLY if user is the author */}
+          {isAuthor && (
+            <div className="flex items-center gap-3">
+              <Link href={`/recipes/${recipe.id}/edit`}>
+                <Button variant="outline">Edit Recipe</Button>
+              </Link>
+              <DeleteRecipeButton recipeId={recipe.id} />
+            </div>
+          )}
         </div>
         
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4">
