@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     // Get the private key from environment variables
-    const secretKey = process.env.JWT_SECRET || "fallback-secret-key";
+    const secretKey = process.env.JWT_SECRET || "fallback-secret-key";  
 
     // Create the JWT token using RS256 algorithm
     const token = jwt.sign(

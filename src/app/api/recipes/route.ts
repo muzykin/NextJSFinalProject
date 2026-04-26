@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { getUserFromToken } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
 
-const prisma = new PrismaClient();
-
-// GET: get all recipes (public endpoint, no auth required)
+// GET: fetch all recipes
 export async function GET() {
   try {
     const recipes = await prisma.recipe.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         author: {
-          select: { name: true, email: true }, 
+          select: { name: true, email: true },
         },
       },
     });
@@ -23,25 +22,25 @@ export async function GET() {
   }
 }
 
-// POST: create a new recipe (requires authentication)
+// POST: create a new recipe
 export async function POST(request: Request) {
   try {
-    const user = await getUserFromToken();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
 
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please log in to create a recipe." },
-        { status: 401 }
-      );
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse request data
+    const secretKey = process.env.JWT_SECRET || "fallback-secret-key";
+    const decoded = jwt.verify(token, secretKey) as { userId: string };
+
     const body = await request.json();
     const { title, description, cookingTime, difficulty } = body;
 
     if (!title || !description || !cookingTime || !difficulty) {
       return NextResponse.json(
-        { error: "All fields (title, description, cookingTime, difficulty) are required" },
+        { error: "All fields are required" },
         { status: 400 }
       );
     }
@@ -50,9 +49,9 @@ export async function POST(request: Request) {
       data: {
         title,
         description,
-        cookingTime: Number(cookingTime),
+        cookingTime: Number(cookingTime), 
         difficulty,
-        authorId: user.userId, // This links the recipe to the user
+        authorId: decoded.userId, // Associate recipe with the authenticated user
       },
     });
 
