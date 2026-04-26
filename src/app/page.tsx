@@ -22,6 +22,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Filtering states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState("All");
+
   useEffect(() => {
     async function fetchRecipes() {
       try {
@@ -41,6 +45,15 @@ export default function Home() {
     fetchRecipes();
   }, []);
 
+  // Filter recipes based on search query and difficulty
+  const filteredRecipes = recipes.filter((recipe) => {
+    const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          recipe.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDifficulty = difficultyFilter === "All" || recipe.difficulty === difficultyFilter;
+    
+    return matchesSearch && matchesDifficulty;
+  });
+
   return (
     <div className="space-y-8">
       {/* Hero Section */}
@@ -58,9 +71,32 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* Recipes Grid */}
+      {/* Recipes Section */}
       <section>
-        <h2 className="text-2xl font-bold text-slate-800 mb-6">Latest Recipes</h2>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <h2 className="text-2xl font-bold text-slate-800">Latest Recipes</h2>
+          
+          {/* Search and Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input 
+              type="text" 
+              placeholder="Search recipes..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 w-full sm:w-64"
+            />
+            <select 
+              value={difficultyFilter}
+              onChange={(e) => setDifficultyFilter(e.target.value)}
+              className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+            >
+              <option value="All">All Difficulties</option>
+              <option value="Easy">Easy 🟢</option>
+              <option value="Medium">Medium 🟡</option>
+              <option value="Hard">Hard 🔴</option>
+            </select>
+          </div>
+        </div>
         
         {loading ? (
           <div className="text-center text-slate-500 py-10">Loading recipes... 🍳</div>
@@ -73,9 +109,16 @@ export default function Home() {
               <Button variant="outline">Be the first to create one!</Button>
             </Link>
           </div>
+        ) : filteredRecipes.length === 0 ? (
+          <div className="text-center bg-white p-10 rounded-xl border border-slate-100 shadow-sm text-slate-500">
+            <p className="text-lg mb-2">No recipes match your search 🔍</p>
+            <Button variant="link" onClick={() => { setSearchQuery(""); setDifficultyFilter("All"); }}>
+              Clear filters
+            </Button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recipes.map((recipe) => (
+            {filteredRecipes.map((recipe) => (
               <Link 
                 href={`/recipes/${recipe.id}`} 
                 key={recipe.id} 
