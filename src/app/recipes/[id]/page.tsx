@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
+import { DeleteRecipeButton } from "@/components/DeleteRecipeButton";
 
 interface RecipePageProps {
   params: Promise<{
@@ -10,15 +13,12 @@ interface RecipePageProps {
 }
 
 export default async function RecipePage({ params }: RecipePageProps) {
-  // Await params in newer Next.js versions
   const resolvedParams = await params;
   const recipeId = resolvedParams.id;
 
   // Fetch the recipe directly from the database
   const recipe = await prisma.recipe.findUnique({
-    where: { 
-      id: recipeId 
-    },
+    where: { id: recipeId },
     include: {
       author: {
         select: { name: true, email: true },
@@ -26,20 +26,42 @@ export default async function RecipePage({ params }: RecipePageProps) {
     },
   });
 
-  // If the recipe doesn't exist, show a 404 page
   if (!recipe) {
     notFound();
   }
 
-  // Render the full recipe details
+  // Check if the current user is the author
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  let currentUserId = null;
+
+  if (token) {
+    try {
+      const secretKey = process.env.JWT_SECRET || "fallback-secret-key";
+      const decoded = jwt.verify(token, secretKey) as { userId: string };
+      currentUserId = decoded.userId;
+    } catch (error) {
+      // Invalid or expired token - ignore silently
+    }
+  }
+
+  // Boolean flag to show/hide edit controls
+  const isAuthor = currentUserId === recipe.authorId;
+
   return (
     <div className="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
       <div className="mb-6">
-        <Link href="/">
-          <Button variant="ghost" className="mb-4 -ml-4 text-slate-500">
-            ← Back to all recipes
-          </Button>
-        </Link>
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/">
+            <Button variant="ghost" className="-ml-4 text-slate-500">
+              ← Back to all recipes
+            </Button>
+          </Link>
+          
+          {/* Conditionally render the delete button ONLY if user is the author */}
+          {isAuthor && <DeleteRecipeButton recipeId={recipe.id} />}
+        </div>
+        
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4">
           {recipe.title}
         </h1>
@@ -62,7 +84,6 @@ export default async function RecipePage({ params }: RecipePageProps) {
 
       <div className="prose prose-slate max-w-none">
         <h3 className="text-xl font-bold text-slate-800 mb-4">Instructions</h3>
-        {/* Render description with preserved line breaks */}
         <div className="text-slate-700 leading-relaxed whitespace-pre-wrap">
           {recipe.description}
         </div>
