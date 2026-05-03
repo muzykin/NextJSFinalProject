@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RecipeApp 
 
-## Getting Started
+It's a full-stack recipe sharing application built with Next.js and Prisma.
 
-First, run the development server:
+## Technologies Used
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS v4
+- PostgreSQL (Database)
+- Prisma (ORM)
+- JWT & bcryptjs (for custom authentication)
 
+## Main Features
+- **User Authentication:** Users can register, log in, and log out.
+- **CRUD Operations:** Create, Read, Update, and Delete recipes.
+- **Ownership Rule:** You can view all recipes, but you can only edit or delete the ones you created.
+- **Search & Filters:** You can search recipes by name and filter them by difficulty on the home page.
+
+---
+
+## How to Run the Project Locally
+
+Follow these exact steps to start the application.
+
+### 1. Install dependencies
+Open your terminal in the project folder and run:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Set up Environment Variables
+Because the `.env` file is ignored, you must create it manually in the root folder of the project.
+Create a `.env` file and paste **exactly** this content into it:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+DATABASE_URL="postgresql://admin:adminpassword@localhost:5433/recipes_db?schema=public"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+JWT_SECRET="my-super-secret-key-that-nobody-knows"
 
-## Learn More
+JWT_PUBLIC_KEY="-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCLadmUwlObFgxLYyqd3PGlATXw
+779n7h9RBNby22b3A8o7+6DSeBkFRsTu4OtWaGdA7lJd8zqjTMZ8brILKgzd6q8i
+03HZgI42TKJ3+5jg0GHdjfRov90UjF/iC4SXnZE+3VrZWxBokjIdoIUJRsqVSZCa
+chXjuxbWcizygW0FdwIDAQAB
+-----END PUBLIC KEY-----"
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Start the Database (Docker)
+The project includes a `docker-compose.yml` file configured for port 5433. To start the PostgreSQL database, run:
+```bash
+docker compose up -d
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Apply Database Migrations
+Push the Prisma schema to the running database to create the required tables:
+```bash
+npx prisma migrate dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 5. Start the App
+Run the development server:
+```bash
+npm run dev
+```
+Now open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Test Data (Optional)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**To add mock data:**
+If you want to see some recipes right away, go to this link while the server is running:
+[http://localhost:3000/api/seed](http://localhost:3000/api/seed)
+This will instantly create 2 test users and 4 recipes.
+
+**To remove mock data:**
+If you want to clean up the database from these seed recipes later:
+1. Open the browser DevTools (F12).
+2. Go to the **Console** tab.
+3. Paste this command and press Enter:
+```javascript
+fetch('/api/seed', { method: 'DELETE' }).then(res => res.json()).then(console.log)
+```
+This safely removes the test users and their recipes without touching your personal ones.
